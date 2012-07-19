@@ -2953,6 +2953,16 @@ function system_update_7069() {
 }
 
 /**
+ * @} End of "defgroup updates-6.x-to-7.x".
+ * The next series of updates should start at 8000.
+ */
+
+/**
+ * @defgroup updates-7.x-extra Extra system updates for 7.x
+ * @{
+ */
+
+/**
  * Remove the obsolete 'drupal_badge_color' and 'drupal_badge_size' variables.
  */
 function system_update_7070() {
@@ -2983,16 +2993,6 @@ function system_update_7072() {
 }
 
 /**
- * @} End of "defgroup updates-6.x-to-7.x".
- * The next series of updates should start at 8000.
- */
-
-/**
- * @defgroup updates-7.x-extra Extra system updates for 7.x
- * @{
- */
-
-/**
  * Add binary to {file_managed}, in case system_update_7034() was run without
  * it.
  */
@@ -3013,6 +3013,23 @@ function system_update_7073() {
     'default' => '',
     'binary' => TRUE,
   ));
+}
+
+/**
+ * Convert menu_links query strings to arrays.
+ */
+function system_update_7074() {
+  $mlids = db_select('menu_links', 'ml')
+    ->fields('ml', array('mlid'))
+    ->condition('options', '%query%', 'LIKE')
+    ->execute()->fetchCol();
+  foreach ($mlids as $mlid) {
+    $menu_link = menu_link_load($mlid);
+    if (is_string($menu_link['options']['query'])) {
+      $menu_link['options']['query'] = drupal_get_query_array($menu_link['options']['query']);
+      menu_link_save($menu_link);
+    }
+  }
 }
 
 /**
